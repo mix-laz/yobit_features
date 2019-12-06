@@ -87,6 +87,7 @@ public class YobitService extends Service {
         stoptimertask();
         timer = new Timer();
 
+
         //initialize the TimerTask's job
         initializeTimerTask(startId);
 
