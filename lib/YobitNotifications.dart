@@ -12,11 +12,14 @@ class YobitNotifications extends StatefulWidget {
 class _YobitNotificationsState extends State<YobitNotifications> {
   final pairController = TextEditingController();
   final priceController = TextEditingController();
-  bool _compare=true;
+  bool _compare=false;
 
   @override
   void initState() {
     super.initState();
+    pairController.text="btc_usd";
+    priceController.text="7600";
+
   }
 
 
@@ -27,12 +30,12 @@ class _YobitNotificationsState extends State<YobitNotifications> {
     super.dispose();
   }
 
-  void startServiceInPlatform(pair, price) async {
+  void startServiceInPlatform(String pair,String price,bool cmp,int timestamp) async {
     if (Platform.isAndroid) {
       var methodChannel = MethodChannel("com.yobit_features.messages");
       String data = await methodChannel.invokeMethod(
-          "startService", {"pair": pair, "price": price, "compare":_compare});
-      debugPrint(data);
+          "startService", {"pair": pair, "price": price, "compare":cmp.toString(),"timestamp":timestamp.toString()});
+      debugPrint("cmp.toString():"+cmp.toString());
     }
   }
 
@@ -92,7 +95,7 @@ class _YobitNotificationsState extends State<YobitNotifications> {
                             textColor: Colors.white,
                             onPressed: () {
                               startServiceInPlatform(
-                                  "edc_btc", priceController.text);
+                                  pairController.text, priceController.text,_compare,new DateTime.now().millisecondsSinceEpoch);
                             },
                             child: Text("Notify",
                                 style: TextStyle(fontSize: 25.0))))

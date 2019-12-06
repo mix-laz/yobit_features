@@ -39,5 +39,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <receiver android:name=".YobitReceiver"
+            android:enabled="true">
+            <intent-filter>
+                <action android:name="yobit.com.laz.yobit_features.startservice" />
+                <action android:name="yobit.com.laz.yobit_features.stopservice"/>
+                <action android:name="yobit.com.laz.yobit_features.pairsprice"/>
+            </intent-filter>
+
+        </receiver>
     </application>
 </manifest>
