@@ -15,11 +15,10 @@ import io.flutter.app.FlutterActivity;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugins.GeneratedPluginRegistrant;
-
-
-import androidx.core.app.NotificationCompat;
-import androidx.annotation.*;
-import androidx.core.app.NotificationManagerCompat;
+import yobit.com.laz.yobit_features.db.AppDatabase;
+import yobit.com.laz.yobit_features.db.Trades;
+import yobit.com.laz.yobit_features.db.UserTrades;
+import yobit.com.laz.yobit_features.db.UserTradesDao;
 
 
 public class MainActivity extends FlutterActivity {
@@ -34,12 +33,12 @@ public class MainActivity extends FlutterActivity {
     public static final String ARGUMENTS_COMPARE = "compare";
     public static final String ARGUMENTS_TIMESTAMP = "timestamp";
     public static final String NOTIFICATION_PRICE_PAIR_CHANNEL_ID = "notif_price_pair";
-    public static final String PAIRS_PRICE__PREFERENCES = "pp_preferences";
+    public static final String PAIRS_PRICE__PREFERENCE = "pp_preference";
     private IntentFilter intFiltPP;
     private IntentFilter intFiltStartService;
     private IntentFilter intFiltStopService;
     private static final String TAG = "MainActivity";
-
+    AppDatabase db;
 
 
     @Override
@@ -47,7 +46,7 @@ public class MainActivity extends FlutterActivity {
         super.onCreate(savedInstanceState);
         GeneratedPluginRegistrant.registerWith(this);
         forYobitService = new Intent(MainActivity.this, YobitService.class);
-
+        db = YobitApplication.getInstance().getDatabase();
 //        intFiltPP = new IntentFilter(PAIRS_PRICE_BROADCAST_ACTION);
 //        intFiltStopService = new IntentFilter(STOP_SERVICE_BROADCAST_ACTION);
 //        intFiltStartService = new IntentFilter(START_SERVICE_BROADCAST_ACTION);
@@ -62,16 +61,19 @@ public class MainActivity extends FlutterActivity {
             public void onMethodCall(MethodCall methodCall, MethodChannel.Result result) {
                 if (methodCall.method.equals("startService")) {
 
-                    storePreferencePairs(
+                    storeUserTrades(
                             methodCall.argument(ARGUMENTS_PAIR),
                             methodCall.argument(ARGUMENTS_PRICE),
-                            Boolean.parseBoolean(methodCall.argument(ARGUMENTS_COMPARE)),
+                            Integer.parseInt(methodCall.argument(ARGUMENTS_COMPARE)),
                             TimeUnit.MILLISECONDS.toSeconds(Long.parseLong(methodCall.argument(ARGUMENTS_TIMESTAMP)))
                     );
 
                     startService(forYobitService);
                     result.success("Service Started");
+                } else if (methodCall.method.equals("stopService")) {
+                    stopService(forYobitService);
                 }
+
             }
         });
     }
@@ -84,18 +86,26 @@ public class MainActivity extends FlutterActivity {
 
     }
 
-    public void storePreferencePairs(String pair, String price, boolean compare, long timestamp) {
-        SharedPreferences mSharedPairsPricePreferences = this.getSharedPreferences(PAIRS_PRICE__PREFERENCES, Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = mSharedPairsPricePreferences.edit();
-        String objString = objTojson(price, compare,timestamp);
-        editor.putString(pair, objString);
-        editor.apply();
+    public void storeUserTrades(String pair, String price, int compare, long timestamp) {
+
+        UserTradesDao usertradesDao = db.userTradesDao();
+        UserTrades usertrades = new UserTrades();
+        usertrades.setPair(pair);
+        usertrades.setPrice(price);
+        usertrades.setCompare(compare);
+        usertrades.setTimestamp(timestamp);
+        usertradesDao.insert(usertrades);
+
+        Log.d(TAG, "UserTrades: " + usertrades.toString());
+
+
+
     }
 
-    private String objTojson(String price, boolean compare,long timestamp) {
+    private String objTojson(String pair, String price, boolean compare, long timestamp) {
         String jsonStr = "";
 
-        NotifPreferencePairs npp = new NotifPreferencePairs(price, compare,timestamp);
+        NotifPreferencePairs npp = new NotifPreferencePairs(pair, price, compare, timestamp);
 
         Gson gson = new Gson();
 

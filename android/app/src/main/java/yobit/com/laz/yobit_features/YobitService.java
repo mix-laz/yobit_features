@@ -5,16 +5,15 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.IBinder;
-import android.text.TextUtils;
 import android.util.Log;
 
 
-
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -23,17 +22,23 @@ import androidx.annotation.NonNull;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import yobit.com.laz.yobit_features.db.AppDatabase;
+import yobit.com.laz.yobit_features.db.Trades;
+import yobit.com.laz.yobit_features.db.TradesDao;
+import yobit.com.laz.yobit_features.db.UserTradesDao;
 
 
 public class YobitService extends Service {
     private static final String TAG = "YobitService";
     private static Timer timer;
     private static TimerTask timerTask;
+    AppDatabase db;
 
     @Override
     public void onCreate() {
         super.onCreate();
         Log.d(TAG, "onCreate() called");
+        db = YobitApplication.getInstance().getDatabase();
 
     }
 
@@ -41,7 +46,7 @@ public class YobitService extends Service {
     public void onDestroy() {
         super.onDestroy();
         Log.d(TAG, "onDestroy() called");
-        sendBroadcast( new Intent(MainActivity.STOP_SERVICE_BROADCAST_ACTION));
+        sendBroadcast(new Intent(MainActivity.STOP_SERVICE_BROADCAST_ACTION));
 
     }
 
@@ -53,15 +58,15 @@ public class YobitService extends Service {
     }
 
 
-
     private void perfomTask(int startId) {
         Log.d(TAG, "onStartCommand called: startId= " + startId);
         final String pairs = getPairs();
-
-        if((pairs!=null)&&(pairs.length()<1)){
-            if(timer!=null) timer.cancel();
+        if (pairs == null || pairs.length() < 1) {
+            if (timer != null) timer.cancel();
             stopSelf();
+            return;
         }
+
 
         NetworkService.getInstance()
                 .getJSONApi()
@@ -71,15 +76,58 @@ public class YobitService extends Service {
                     public void onResponse(@NonNull Call<Map<String, ArrayList<History>>> call, @NonNull Response<Map<String, ArrayList<History>>> response) {
                         Map<String, ArrayList<History>> body = response.body();
                         if (body != null) {
-                            sendBroadcast(body);
+                            writeToTradesTable(body);
+                            sendBroadcastIfAny();
+                            clearTradesTable();
+
                         }
                     }
-
                     @Override
                     public void onFailure(@NonNull Call<Map<String, ArrayList<History>>> call, @NonNull Throwable t) {
                         t.printStackTrace();
                     }
                 });
+    }
+
+    private void clearTradesTable() {
+        TradesDao tradesDao = db.tradesDao();
+        tradesDao.clearTable();
+    }
+
+    private void writeToTradesTable(Map<String, ArrayList<History>> body) {
+
+        TradesDao tradesDao = db.tradesDao();
+
+        for (Map.Entry<String, ArrayList<History>> entry : body.entrySet()) {
+            final ArrayList<History> value = entry.getValue();
+            String pair = entry.getKey();
+
+            final Iterator<History> iterator = value.iterator();
+            while (iterator.hasNext()) {
+                final History next = iterator.next();
+                Trades trades = new Trades();
+                trades.setPair(pair);
+                trades.setType(next.getType());
+                ;
+                trades.setPrice(next.getPrice());
+                trades.setAmount(next.getAmount());
+                trades.setTimestamp(next.getTimestamp());
+                tradesDao.insert(trades);
+            }
+
+            final List<Trades> all = tradesDao.getAll();
+            Log.d(TAG, "List<Trades> size = " + all.size());
+
+            final Iterator<Trades> it = all.iterator();
+            while (it.hasNext()) {
+                final Trades next = it.next();
+                Log.d(TAG, "Next row from Trades table: " + next.toString());
+
+
+            }
+        }
+
+
     }
 
     public void startTimer(int startId) {
@@ -117,110 +165,45 @@ public class YobitService extends Service {
         return null;
     }
 
-    public void sendBroadcast(Map<String, ArrayList<History>> body) {
+    public void sendBroadcastIfAny() {
 
-        Map<String, String> prefMap = getPreferencePairsPriceMap();
+        UserTradesDao userTradesDao = db.userTradesDao();
+        List<PriceNotification> priceLessNotification = userTradesDao.getPriceLessNotification();
+        List<PriceNotification> priceMoreNotification = userTradesDao.getPriceMoreNotification();
+        priceLessNotification.addAll(priceMoreNotification);
 
-
-        Log.d(TAG, "current getPreferencePairsPriceMap = " + prefMap.toString());
-        Log.d(TAG, "prefMap.keySet().size() = " + prefMap.keySet().size());
-
-
-
-
-        for (Map.Entry<String, String> stringEntry : prefMap.entrySet()) {
+        Log.d(TAG, "priceLessNotification size =  " + priceLessNotification.size());
+        Log.d(TAG, "priceMoreNotification size =  " + priceMoreNotification.size());
 
 
-            final NotifPreferencePairs notifPreferencePairs = jsonToObject(prefMap.get(stringEntry.getKey()));
+        final Iterator<PriceNotification> iteratorM = priceLessNotification.iterator();
+        PriceNotification pn = null;
+        while (iteratorM.hasNext()) {
+            pn = iteratorM.next();
 
-            ArrayList<History> historyArrayList = body.get(stringEntry.getKey());
+            Intent intent = new Intent(MainActivity.PAIRS_PRICE_BROADCAST_ACTION);
+            intent.putExtra("price", pn.getPrice());
+            intent.putExtra("pair_name", pn.getPair());
+            sendBroadcast(intent);
+            userTradesDao.deleteNotifiedPair(pn.getTimestamp());
 
-            boolean br = false;
-            for (History history : historyArrayList) {
-                Log.d(TAG, "history.getTimestamp() > notifPreferencePairs.getTimestamp(): " + (history.getTimestamp() > notifPreferencePairs.getTimestamp()));
-                Log.d(TAG, "history.getTimestamp() : " + history.getTimestamp());
-                Log.d(TAG, "notifPreferencePairs.getTimestamp() : " + notifPreferencePairs.getTimestamp());
-
-
-                if (!TextUtils.isEmpty(notifPreferencePairs.getPricemore())) {
-                    if (Double.parseDouble(history.getPrice()) > Double.parseDouble(notifPreferencePairs.getPricemore()) &&
-                            history.getTimestamp() > notifPreferencePairs.getTimestamp()) {
-                        Intent intent = new Intent(MainActivity.PAIRS_PRICE_BROADCAST_ACTION);
-                        intent.putExtra("price", history.getPrice());
-                        intent.putExtra("pair_name", stringEntry.getKey());
-                        sendBroadcast(intent);
-                        removePairPreference(stringEntry.getKey());
-                        br = true;
-                    }
-                }
-                if (!TextUtils.isEmpty(notifPreferencePairs.getPriceless())) {
-                    if (Double.parseDouble(history.getPrice()) < Double.parseDouble(notifPreferencePairs.getPriceless()) &&
-                            history.getTimestamp() > notifPreferencePairs.getTimestamp()) {
-                        Intent intent = new Intent(MainActivity.PAIRS_PRICE_BROADCAST_ACTION);
-                        intent.putExtra("price", history.getPrice());
-                        intent.putExtra("pair_name", stringEntry.getKey());
-                        sendBroadcast(intent);
-                        removePairPreference(stringEntry.getKey());
-                        br = true;
-                    }
-                }
-                if (br) break;
-            }
-
+            Log.d(TAG, "PriceNotification next =  " + pn.toString());
         }
 
+        Log.d(TAG, "USERTRADES AFTER DELETE ALL PAIRS =  " + userTradesDao.getAll().toString());
+
     }
+
+
     private String getPairs() {
-        final Map<String, String> preferencePairsMap = getPreferencePairsPriceMap();
-        StringBuilder arrPairs = new StringBuilder();
-        for (Map.Entry<String, String> entry : preferencePairsMap.entrySet()) {
-            Log.d(TAG, "next pair: " + entry.getKey());
-
-            arrPairs.append((String) entry.getKey()).append("-");
-        }
-
-        //remove last "-" symbol
-        if (arrPairs.length() > 0)
-            arrPairs = arrPairs.delete(arrPairs.length() - 1, arrPairs.length());
-        return arrPairs.toString();
+        final UserTradesDao userTradesDao = db.userTradesDao();
+        final String pairs = userTradesDao.pairsAsString();
+        Log.d(TAG, "arrPairs  : " + pairs);
+        return pairs;
     }
 
 
-    public Map<String, String> getPreferencePairsPriceMap() {
-        SharedPreferences mSharedPairsPricePreferences = this.getSharedPreferences(MainActivity.PAIRS_PRICE__PREFERENCES, Context.MODE_PRIVATE);
-        return (Map<String, String>) mSharedPairsPricePreferences.getAll();
-
-    }
-
-    public void removePairPreference(String key) {
-        SharedPreferences mSharedPairsPricePreferences = this.getSharedPreferences(MainActivity.PAIRS_PRICE__PREFERENCES, Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = mSharedPairsPricePreferences.edit();
-        editor.remove(key);
-        editor.apply();
-//        Log.d(TAG, "After remove " + mSharedPairsPricePreferences.getString(key,"Empty"));
 
 
-    }
-
-
-    private NotifPreferencePairs jsonToObject(String prefJson) {
-        // final ObjectMapper mapper = new ObjectMapper();
-        NotifPreferencePairs notifPreferencePairs = null;
-
-        Gson gson = new Gson();
-        try {
-            notifPreferencePairs = gson.fromJson(prefJson, NotifPreferencePairs.class);
-        } catch (JsonSyntaxException e) {
-            e.printStackTrace();
-        }
-
-
-//        try {
-//            notifPreferencePairs = mapper.readValue(prefJson, NotifPreferencePairs.class);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-        return notifPreferencePairs;
-    }
 
 }

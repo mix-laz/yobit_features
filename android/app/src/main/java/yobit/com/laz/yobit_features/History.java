@@ -17,6 +17,17 @@ public class History {
     @Expose
     int timestamp;
 
+
+    @SerializedName("type")
+    @Expose
+    String type;
+
+
+    @SerializedName("amount")
+    @Expose
+    double amount;
+
+
     public String getPrice() {
         return price;
     }
@@ -31,5 +42,21 @@ public class History {
 
     public void setTimestamp(int timestamp) {
         this.timestamp = timestamp;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public double getAmount() {
+        return amount;
+    }
+
+    public void setAmount(double amount) {
+        this.amount = amount;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 }

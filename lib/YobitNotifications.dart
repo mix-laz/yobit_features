@@ -12,14 +12,13 @@ class YobitNotifications extends StatefulWidget {
 class _YobitNotificationsState extends State<YobitNotifications> {
   final pairController = TextEditingController();
   final priceController = TextEditingController();
-  bool _compare=false;
+  bool _compare = false;
 
   @override
   void initState() {
     super.initState();
-    pairController.text="btc_usd";
-    priceController.text="7600";
-
+    pairController.text = "sex_btc";
+    priceController.text = "0.000179";
   }
 
 
@@ -30,18 +29,31 @@ class _YobitNotificationsState extends State<YobitNotifications> {
     super.dispose();
   }
 
-  void startServiceInPlatform(String pair,String price,bool cmp,int timestamp) async {
+  void startServiceInPlatform(String pair, String price, int cmp,
+      int timestamp) async {
     if (Platform.isAndroid) {
       var methodChannel = MethodChannel("com.yobit_features.messages");
       String data = await methodChannel.invokeMethod(
-          "startService", {"pair": pair, "price": price, "compare":cmp.toString(),"timestamp":timestamp.toString()});
-      debugPrint("cmp.toString():"+cmp.toString());
+          "startService", {
+        "pair": pair,
+        "price": price,
+        "compare": cmp.toString(),
+        "timestamp": timestamp.toString()
+      });
+      debugPrint("");
     }
   }
 
-  void _changeIcon(){
+  void stopServiceInPlatform() async {
+    if (Platform.isAndroid) {
+      var methodChannel = MethodChannel("com.yobit_features.messages");
+      await methodChannel.invokeMethod('stopService');
+    }
+  }
+
+  void _changeIcon() {
     setState(() {
-      _compare=!_compare;
+      _compare = !_compare;
     });
   }
 
@@ -74,7 +86,9 @@ class _YobitNotificationsState extends State<YobitNotifications> {
                         Expanded(
                             child: GestureDetector(onTap: _changeIcon,
                               child: Image(width: 30,
-                                  image: AssetImage(_compare?'assets/right_chevron.png':'assets/left_chevron.png')
+                                  image: AssetImage(_compare
+                                      ? 'assets/right_chevron.png'
+                                      : 'assets/left_chevron.png')
                               ),
                             )
                         ),
@@ -87,7 +101,17 @@ class _YobitNotificationsState extends State<YobitNotifications> {
                           ),
                         ),
                       ]),
-//button
+                  Row(children: <Widget>[
+                    Expanded(
+                        child: FlatButton(
+                            color: Colors.blue,
+                            textColor: Colors.white,
+                            onPressed: () {
+                              stopServiceInPlatform();
+                            },
+                            child: Text("Stop Notifications",
+                                style: TextStyle(fontSize: 25.0))))
+                  ]),
                   Row(children: <Widget>[
                     Expanded(
                         child: FlatButton(
@@ -95,10 +119,12 @@ class _YobitNotificationsState extends State<YobitNotifications> {
                             textColor: Colors.white,
                             onPressed: () {
                               startServiceInPlatform(
-                                  pairController.text, priceController.text,_compare,new DateTime.now().millisecondsSinceEpoch);
+                                  pairController.text, priceController.text,
+                                  _compare ? 1 : 0,
+                                  new DateTime.now().millisecondsSinceEpoch);
                             },
-                            child: Text("Notify",
-                                style: TextStyle(fontSize: 25.0))))
+                            child: Text("+",
+                                style: TextStyle(fontSize: 35.0))))
                   ])
                 ])));
   }

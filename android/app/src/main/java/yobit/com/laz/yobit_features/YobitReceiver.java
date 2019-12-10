@@ -6,6 +6,10 @@ import android.content.Intent;
 import android.media.RingtoneManager;
 import android.os.Build;
 import android.util.Log;
+
+import java.sql.Date;
+import java.sql.Timestamp;
+
 import androidx.core.app.NotificationCompat;
 import androidx.annotation.*;
 import androidx.core.app.NotificationManagerCompat;
@@ -14,7 +18,6 @@ import androidx.core.app.NotificationManagerCompat;
 public class YobitReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
-        Log.d("YobitReceiver", "onReceive called");
         if(intent.getAction().equals(MainActivity.START_SERVICE_BROADCAST_ACTION))
             sendNotifFromService(context,new Intent().putExtra("text","Service statrted"));
         if(intent.getAction().equals(MainActivity.STOP_SERVICE_BROADCAST_ACTION))
@@ -32,9 +35,6 @@ public class YobitReceiver extends BroadcastReceiver {
 //                    //.setSmallIcon(R.drawable.ic_android_black_24dp);
 //            startForeground(101,builder.build());
 //        }
-
-
-
 
         }
 
@@ -55,7 +55,7 @@ public class YobitReceiver extends BroadcastReceiver {
                 .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
                 .setAutoCancel(true);
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
-        notificationManager.notify(1, builder.build());
+        notificationManager.notify(new Long(new Timestamp(System.currentTimeMillis()).getTime()).intValue(), builder.build());
     }
     public void sendNotifFromService( Context context,Intent intent) {
         //  Log.d("last", intent.getStringExtra("last")+"");

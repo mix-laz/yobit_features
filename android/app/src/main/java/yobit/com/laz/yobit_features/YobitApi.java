@@ -9,6 +9,7 @@ import retrofit2.http.Path;
 public interface YobitApi {
     @GET("ticker/{pairs}")
     public Call<Map<String,Ticker>> getTickerWithPairs(@Path("pairs") String pairs);
-    @GET("trades/{pairs}?limit=150")
+
+    @GET("trades/{pairs}?limit=5")
     public Call<Map<String, ArrayList<History>>> getHistoryWithPairs(@Path("pairs") String pairs);
 }
