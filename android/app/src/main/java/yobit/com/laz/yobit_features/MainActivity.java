@@ -17,6 +17,7 @@ import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugins.GeneratedPluginRegistrant;
 import yobit.com.laz.yobit_features.db.AppDatabase;
+import yobit.com.laz.yobit_features.db.Nick;
 import yobit.com.laz.yobit_features.db.Trades;
 import yobit.com.laz.yobit_features.db.UserTrades;
 import yobit.com.laz.yobit_features.db.UserTradesDao;
@@ -28,6 +29,7 @@ public class MainActivity extends FlutterActivity {
     public final static String PAIRS_PRICE_BROADCAST_ACTION = "yobit.com.laz.yobit_features.pairsprice";
     public final static String START_SERVICE_BROADCAST_ACTION = "yobit.com.laz.yobit_features.startservice";
     public final static String STOP_SERVICE_BROADCAST_ACTION = "yobit.com.laz.yobit_features.stopservice";
+    public final static String NICK_PRESENT_BROADCAST_ACTION = "yobit.com.laz.yobit_features.np";
     public static final String SERVICE_EXTRA = "service_extra";
     public static final String ARGUMENTS_PAIR = "pair";
     public static final String ARGUMENTS_PRICE = "price";
@@ -84,12 +86,16 @@ public class MainActivity extends FlutterActivity {
                 }else if (methodCall.method.equals("getUserConditionsPrice")) {
                     List<String> allAsString = db.userTradesDao().getAllAsString();
                     result.success(allAsString);
-                }else if (methodCall.method.equals("stopService")) {
-                    stopService(forYobitService);
-                }else if (methodCall.method.equals("stopService")) {
-                    stopService(forYobitService);
-                }else if (methodCall.method.equals("stopService")) {
-                    stopService(forYobitService);
+                }else if (methodCall.method.equals("getNickList")) {
+                    List<String> list = db.nickDao().getList();
+                    result.success(list);
+                }else if (methodCall.method.equals("trackingNick")) {
+                    Nick nick =new Nick(methodCall.argument("nick"));
+                    db.nickDao().insert(nick);
+                    List<String> list = db.nickDao().getList();
+                    result.success(list);
+                }else if (methodCall.method.equals("removeNick")) {
+
                 }
 
             }

@@ -45,6 +45,7 @@
                 <action android:name="yobit.com.laz.yobit_features.startservice" />
                 <action android:name="yobit.com.laz.yobit_features.stopservice"/>
                 <action android:name="yobit.com.laz.yobit_features.pairsprice"/>
+                <action android:name="yobit.com.laz.yobit_features.np"/>
             </intent-filter>
 
         </receiver>

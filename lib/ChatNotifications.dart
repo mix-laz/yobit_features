@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 
+import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
@@ -10,38 +10,43 @@ class ChatNotifications extends StatefulWidget {
 }
 
 class _ChatNotificationsState extends State<ChatNotifications> {
-  final pairController = TextEditingController();
-  final priceController = TextEditingController();
-  bool _compare = false;
+  final nickController = TextEditingController();
+  List<String> _list;
 
   @override
   void initState() {
     super.initState();
-    pairController.text = "mikro_btc";
-    priceController.text = "0.000179";
+    nickController.text = "";
+    inicializeListView();
   }
-
 
   @override
   void dispose() {
-    pairController.dispose();
-    priceController.dispose();
+    nickController.dispose();
     super.dispose();
   }
 
-  void startServiceInPlatform(String pair, String price, int cmp,
-      int timestamp) async {
-    if (Platform.isAndroid) {
-      var methodChannel = MethodChannel("com.yobit_features.messages");
-      String data = await methodChannel.invokeMethod(
-          "startService", {
-        "pair": pair,
-        "price": price,
-        "compare": cmp.toString(),
-        "timestamp": timestamp.toString()
-      });
-      debugPrint("");
-    }
+  void trackingNickInPlatform(
+      String nick) async {
+    var methodChannel = MethodChannel("com.yobit_features.messages");
+    List<dynamic> dynam = await methodChannel.invokeMethod("trackingNick", {
+      "nick": nick
+    });
+    List<String> result = dynam.cast<String>();
+    setState(() {
+      _list = result;
+    });
+    debugPrint("result: "+result.toString());
+  }
+
+  void removeNickInPlatform(String name) async {
+    var methodChannel = MethodChannel("com.yobit_features.messages");
+    List<dynamic> dynam = await methodChannel.invokeMethod(
+        "removeNick", {"name":name});
+    List<String> result = dynam.cast<String>();
+    setState(() {
+      _list = result;
+    });
   }
 
   void stopServiceInPlatform() async {
@@ -51,11 +56,6 @@ class _ChatNotificationsState extends State<ChatNotifications> {
     }
   }
 
-  void _changeIcon() {
-    setState(() {
-      _compare = !_compare;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -68,65 +68,76 @@ class _ChatNotificationsState extends State<ChatNotifications> {
             decoration: new BoxDecoration(color: Colors.white),
             height: double.infinity,
             width: double.infinity,
-            child: Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: <Widget>[
-                  //fields
-                  Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: <Widget>[
-                        Expanded(
-                          child: TextField(
-                            controller: pairController,
-                            decoration: InputDecoration(
-                                border: OutlineInputBorder(),
-                                hintText: 'pair...x_y'),
-                          ),
-                        ),
-                        Expanded(
-                            child: GestureDetector(onTap: _changeIcon,
-                              child: Image(width: 30,
-                                  image: AssetImage(_compare
-                                      ? 'assets/right_chevron.png'
-                                      : 'assets/left_chevron.png')
-                              ),
+            child: Column(mainAxisAlignment: MainAxisAlignment.end, children: <
+                Widget>[
+              Expanded(
+                child: ListView.builder(
+                    itemCount: _list == null ? 0 : _list.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      return new Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: <Widget>[
+                            Expanded(
+                              child: Center(child: Text(_list.elementAt(index))),
+                            ),
+
+                            Expanded(
+                                child: GestureDetector(
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Icon(CupertinoIcons.clear_thick),
+                                    ),
+                                    onTap: () =>
+                                        removeNickInPlatform(_list.elementAt(index)))
                             )
-                        ),
-                        Expanded(
-                          child: TextField(
-                            controller: priceController,
-                            decoration: InputDecoration(
-                                border: OutlineInputBorder(),
-                                hintText: 'price...'),
-                          ),
-                        ),
-                      ]),
-                  Row(children: <Widget>[
+                          ]);
+                    }),
+              ),
+              Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: <Widget>[
                     Expanded(
-                        child: FlatButton(
-                            color: Colors.blue,
-                            textColor: Colors.white,
-                            onPressed: () {
-                              stopServiceInPlatform();
-                            },
-                            child: Text("Stop Notifications",
-                                style: TextStyle(fontSize: 25.0))))
+                      child: TextField(
+                        controller: nickController,
+                        decoration: InputDecoration(
+                            border: OutlineInputBorder(),
+                            hintText: 'nick...'),
+                      ),
+                    ),
+
                   ]),
-                  Row(children: <Widget>[
-                    Expanded(
-                        child: FlatButton(
-                            color: Colors.blue,
-                            textColor: Colors.white,
-                            onPressed: () {
-                              startServiceInPlatform(
-                                  pairController.text, priceController.text,
-                                  _compare ? 1 : 0,
-                                  new DateTime.now().millisecondsSinceEpoch);
-                            },
-                            child: Text("+",
-                                style: TextStyle(fontSize: 35.0))))
-                  ])
-                ])));
+              Row(children: <Widget>[
+                Expanded(
+                    child: FlatButton(
+                        color: Colors.blue,
+                        textColor: Colors.white,
+                        onPressed: () {
+                          stopServiceInPlatform();
+                        },
+                        child: Text("Stop Notifications",
+                            style: TextStyle(fontSize: 25.0))))
+              ]),
+              Row(children: <Widget>[
+                Expanded(
+                    child: FlatButton(
+                        color: Colors.blue,
+                        textColor: Colors.white,
+                        onPressed: () {
+                          trackingNickInPlatform(      nickController.text);
+
+                        },
+                        child: Text("+", style: TextStyle(fontSize: 35.0))))
+              ])
+            ])));
+  }
+
+  void inicializeListView() async {
+    var methodChannel = MethodChannel("com.yobit_features.messages");
+    List<dynamic> dynam =    await methodChannel.invokeMethod("getNickList");
+    List<String> result = dynam.cast<String>();
+    setState(() {
+      _list = result;
+    });
   }
 }
 //
