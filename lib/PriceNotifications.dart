@@ -4,12 +4,12 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 
-class YobitNotifications extends StatefulWidget {
+class PriceNotifications extends StatefulWidget {
   @override
-  _YobitNotificationsState createState() => _YobitNotificationsState();
+  _PriceNotificationsState createState() => _PriceNotificationsState();
 }
 
-class _YobitNotificationsState extends State<YobitNotifications> {
+class _PriceNotificationsState extends State<PriceNotifications> {
   final pairController = TextEditingController();
   final priceController = TextEditingController();
   bool _compare = false;

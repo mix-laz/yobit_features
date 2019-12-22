@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'NavDrawerInTabbar.dart';
-import 'YobitNotifications.dart';
 
 void main() => runApp(MyApp());
 

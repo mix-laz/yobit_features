@@ -4,12 +4,12 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 
-class YobitNotifications extends StatefulWidget {
+class ChatNotifications extends StatefulWidget {
   @override
-  _YobitNotificationsState createState() => _YobitNotificationsState();
+  _ChatNotificationsState createState() => _ChatNotificationsState();
 }
 
-class _YobitNotificationsState extends State<YobitNotifications> {
+class _ChatNotificationsState extends State<ChatNotifications> {
   final pairController = TextEditingController();
   final priceController = TextEditingController();
   bool _compare = false;
@@ -17,7 +17,7 @@ class _YobitNotificationsState extends State<YobitNotifications> {
   @override
   void initState() {
     super.initState();
-    pairController.text = "sex_btc";
+    pairController.text = "mikro_btc";
     priceController.text = "0.000179";
   }
 
