@@ -80,6 +80,7 @@ public class YobitService extends Service {
                             sendBroadcastIfAny();
 
 
+
                         }
                     }
                     @Override
@@ -190,6 +191,8 @@ public class YobitService extends Service {
 
         Log.d(TAG, "USERTRADES AFTER DELETE ALL PAIRS =  " + userTradesDao.getAll().toString());
         clearTradesTable();
+
+       // db.nickDao().getList();
     }
 
 
