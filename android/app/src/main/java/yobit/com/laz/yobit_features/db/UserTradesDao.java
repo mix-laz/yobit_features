@@ -24,24 +24,22 @@ public interface UserTradesDao {
     @Query("SELECT * FROM usertrades WHERE id = :id")
     UserTrades getById(long id);
 
-    @Query("SELECT * FROM usertrades WHERE pair = :pair")
-    List<UserTrades> getByPair(String pair);
+    @Query("SELECT pair || ',' || compare || ',' || price || ',' || timestamp FROM usertrades")
+    List<String> getAllAsString();
 
-    @Query("SELECT trades.pair, trades.price, usertrades.timestamp, usertrades.compare " +
+    @Query("SELECT trades.price, trades.pair,  usertrades.timestamp, usertrades.compare, MIN(trades.price) " +
             "FROM trades, usertrades " +
             "WHERE trades.pair == usertrades.pair " +
-            "AND trades.pair == usertrades.pair " +
             "AND trades.timestamp>usertrades.timestamp  " +
-            "AND usertrades.compare==0 AND trades.price< usertrades.price  ")
+            "AND usertrades.compare==0 AND trades.price< usertrades.price GROUP BY trades.pair  ")
     List<PriceNotification> getPriceLessNotification();
 
 
-    @Query("SELECT trades.pair, trades.price, usertrades.timestamp, usertrades.compare " +
+    @Query("SELECT trades.price, trades.pair, trades.price, usertrades.timestamp, usertrades.compare, MAX(trades.price) " +
             "FROM trades, usertrades " +
             "WHERE trades.pair == usertrades.pair " +
-            "AND trades.pair == usertrades.pair " +
             "AND trades.timestamp>usertrades.timestamp  " +
-            "AND usertrades.compare==1 AND trades.price > usertrades.price  ")
+            "AND usertrades.compare==1 AND trades.price > usertrades.price  GROUP BY trades.pair")
     List<PriceNotification> getPriceMoreNotification();
 
 

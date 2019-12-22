@@ -46,7 +46,7 @@ public class YobitService extends Service {
     public void onDestroy() {
         super.onDestroy();
         Log.d(TAG, "onDestroy() called");
-        sendBroadcast(new Intent(MainActivity.STOP_SERVICE_BROADCAST_ACTION));
+       // sendBroadcast(new Intent(MainActivity.STOP_SERVICE_BROADCAST_ACTION));
 
     }
 
@@ -78,7 +78,7 @@ public class YobitService extends Service {
                         if (body != null) {
                             writeToTradesTable(body);
                             sendBroadcastIfAny();
-                            clearTradesTable();
+
 
                         }
                     }
@@ -102,16 +102,15 @@ public class YobitService extends Service {
             final ArrayList<History> value = entry.getValue();
             String pair = entry.getKey();
 
-            final Iterator<History> iterator = value.iterator();
-            while (iterator.hasNext()) {
-                final History next = iterator.next();
+            final Iterator<History> it_history = value.iterator();
+            while (it_history.hasNext()) {
+                final History history_next = it_history.next();
                 Trades trades = new Trades();
                 trades.setPair(pair);
-                trades.setType(next.getType());
-                ;
-                trades.setPrice(next.getPrice());
-                trades.setAmount(next.getAmount());
-                trades.setTimestamp(next.getTimestamp());
+                trades.setType(history_next.getType());
+                trades.setPrice(history_next.getPrice());
+                trades.setAmount(history_next.getAmount());
+                trades.setTimestamp(history_next.getTimestamp());
                 tradesDao.insert(trades);
             }
 
@@ -176,22 +175,21 @@ public class YobitService extends Service {
         Log.d(TAG, "priceMoreNotification size =  " + priceMoreNotification.size());
 
 
-        final Iterator<PriceNotification> iteratorM = priceLessNotification.iterator();
-        PriceNotification pn = null;
-        while (iteratorM.hasNext()) {
-            pn = iteratorM.next();
+        final Iterator<PriceNotification> it_pn = priceLessNotification.iterator();
+        while (it_pn.hasNext()) {
+            PriceNotification pn_next = it_pn.next();
 
             Intent intent = new Intent(MainActivity.PAIRS_PRICE_BROADCAST_ACTION);
-            intent.putExtra("price", pn.getPrice());
-            intent.putExtra("pair_name", pn.getPair());
+            intent.putExtra("price", pn_next.getPrice());
+            intent.putExtra("pair_name", pn_next.getPair());
             sendBroadcast(intent);
-            userTradesDao.deleteNotifiedPair(pn.getTimestamp());
+            userTradesDao.deleteNotifiedPair(pn_next.getTimestamp());
 
-            Log.d(TAG, "PriceNotification next =  " + pn.toString());
+            Log.d(TAG, "PriceNotification next =  " + pn_next.toString());
         }
 
         Log.d(TAG, "USERTRADES AFTER DELETE ALL PAIRS =  " + userTradesDao.getAll().toString());
-
+        clearTradesTable();
     }
 
 

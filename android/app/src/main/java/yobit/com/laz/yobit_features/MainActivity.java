@@ -9,6 +9,7 @@ import android.util.Log;
 
 import com.google.gson.Gson;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import io.flutter.app.FlutterActivity;
@@ -38,7 +39,7 @@ public class MainActivity extends FlutterActivity {
     private IntentFilter intFiltStartService;
     private IntentFilter intFiltStopService;
     private static final String TAG = "MainActivity";
-    AppDatabase db;
+    public static AppDatabase db = YobitApplication.getInstance().getDatabase();
 
 
     @Override
@@ -46,7 +47,7 @@ public class MainActivity extends FlutterActivity {
         super.onCreate(savedInstanceState);
         GeneratedPluginRegistrant.registerWith(this);
         forYobitService = new Intent(MainActivity.this, YobitService.class);
-        db = YobitApplication.getInstance().getDatabase();
+
 //        intFiltPP = new IntentFilter(PAIRS_PRICE_BROADCAST_ACTION);
 //        intFiltStopService = new IntentFilter(STOP_SERVICE_BROADCAST_ACTION);
 //        intFiltStartService = new IntentFilter(START_SERVICE_BROADCAST_ACTION);
@@ -67,10 +68,27 @@ public class MainActivity extends FlutterActivity {
                             Integer.parseInt(methodCall.argument(ARGUMENTS_COMPARE)),
                             TimeUnit.MILLISECONDS.toSeconds(Long.parseLong(methodCall.argument(ARGUMENTS_TIMESTAMP)))
                     );
-
                     startService(forYobitService);
-                    result.success("Service Started");
+
+                    List<String> allAsString = db.userTradesDao().getAllAsString();
+                    result.success(allAsString);
+
                 } else if (methodCall.method.equals("stopService")) {
+                    stopService(forYobitService);
+                }else if (methodCall.method.equals("removeUserConditionPrice")) {
+                    db.userTradesDao().deleteNotifiedPair(Long.parseLong(methodCall.argument("timestamp")));
+                    List<String> allAsString = db.userTradesDao().getAllAsString();
+                    result.success(allAsString);
+                    Log.d(TAG, "onDestroy called");
+
+                }else if (methodCall.method.equals("getUserConditionsPrice")) {
+                    List<String> allAsString = db.userTradesDao().getAllAsString();
+                    result.success(allAsString);
+                }else if (methodCall.method.equals("stopService")) {
+                    stopService(forYobitService);
+                }else if (methodCall.method.equals("stopService")) {
+                    stopService(forYobitService);
+                }else if (methodCall.method.equals("stopService")) {
                     stopService(forYobitService);
                 }
 
@@ -82,7 +100,6 @@ public class MainActivity extends FlutterActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        Log.d(TAG, "onDestroy called");
 
     }
 
