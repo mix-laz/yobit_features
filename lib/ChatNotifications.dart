@@ -16,10 +16,10 @@ class _ChatNotificationsState extends State<ChatNotifications> {
   @override
   void initState() {
     super.initState();
-    nickController.text = "";
-    inicializeListView();
-
+    pairController.text = "mikro_btc";
+    priceController.text = "0.000179";
   }
+
 
   @override
   void dispose() {
