@@ -18,6 +18,7 @@ class _ChatNotificationsState extends State<ChatNotifications> {
     super.initState();
     nickController.text = "";
     inicializeListView();
+
   }
 
   @override
