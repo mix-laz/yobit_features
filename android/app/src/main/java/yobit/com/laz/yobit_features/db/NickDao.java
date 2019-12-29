@@ -10,7 +10,7 @@ import java.util.List;
 
 public interface NickDao {
 
-    @Query("SELECT name FROM nick")
+    @Query("SELECT DISTINCT  name FROM nick")
     List<String> getList();
 
 

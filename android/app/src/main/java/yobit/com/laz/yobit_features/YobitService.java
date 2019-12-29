@@ -4,6 +4,7 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.IBinder;
 import android.util.Log;
 
@@ -11,6 +12,7 @@ import android.util.Log;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -19,6 +21,12 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import androidx.annotation.NonNull;
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -39,15 +47,15 @@ public class YobitService extends Service {
         super.onCreate();
         Log.d(TAG, "onCreate() called");
         db = YobitApplication.getInstance().getDatabase();
-
+        //sendBroadcast(new Intent(MainActivity.STOP_SERVICE_BROADCAST_ACTION));
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
+        if (timer != null) timer.cancel();
         Log.d(TAG, "onDestroy() called");
-       // sendBroadcast(new Intent(MainActivity.STOP_SERVICE_BROADCAST_ACTION));
-
+        // sendBroadcast(new Intent(MainActivity.STOP_SERVICE_BROADCAST_ACTION));
     }
 
     @Override
@@ -61,7 +69,8 @@ public class YobitService extends Service {
     private void perfomTask(int startId) {
         Log.d(TAG, "onStartCommand called: startId= " + startId);
         final String pairs = getPairs();
-        if (pairs == null || pairs.length() < 1) {
+        List<String> nick_list = db.nickDao().getList();
+        if ((pairs == null || pairs.length() < 1)&&(nick_list.size()==0)) {
             if (timer != null) timer.cancel();
             stopSelf();
             return;
@@ -78,16 +87,41 @@ public class YobitService extends Service {
                         if (body != null) {
                             writeToTradesTable(body);
                             sendBroadcastIfAny();
-
-
-
+                            new checkNickAsyncTask().execute();
                         }
                     }
+
                     @Override
                     public void onFailure(@NonNull Call<Map<String, ArrayList<History>>> call, @NonNull Throwable t) {
                         t.printStackTrace();
                     }
                 });
+    }
+
+    private void checkNickPresent() {
+        List<String> db_nick_list = db.nickDao().getList();
+        Document doc = null;
+        try {
+            doc = Jsoup.connect("https://yobit.net/ru").get();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if (doc != null) {
+            Elements elements = doc.select("a.nick");
+            for(Element element:elements){
+                String web_nick = element.text();
+                for(String db_nick:db_nick_list){
+                    if(db_nick.equals(web_nick)){
+                        sendBroadcast(new Intent().putExtra("nick",db_nick).setAction(MainActivity.NICK_PRESENT_BROADCAST_ACTION));
+                        db.nickDao().deleteNick(db_nick);
+                    }
+                }
+            }
+        }
+//        for(String nick:coincidental_nicks){
+//            sendBroadcast(new Intent().putExtra("nick",nick).setAction(MainActivity.NICK_PRESENT_BROADCAST_ACTION));
+//        }
+     //   Log.d(TAG, "element.text() = " + element.text());
     }
 
     private void clearTradesTable() {
@@ -96,9 +130,7 @@ public class YobitService extends Service {
     }
 
     private void writeToTradesTable(Map<String, ArrayList<History>> body) {
-
         TradesDao tradesDao = db.tradesDao();
-
         for (Map.Entry<String, ArrayList<History>> entry : body.entrySet()) {
             final ArrayList<History> value = entry.getValue();
             String pair = entry.getKey();
@@ -181,8 +213,7 @@ public class YobitService extends Service {
             PriceNotification pn_next = it_pn.next();
 
             Intent intent = new Intent(MainActivity.PAIRS_PRICE_BROADCAST_ACTION);
-            intent.putExtra("price", pn_next.getPrice());
-            intent.putExtra("pair_name", pn_next.getPair());
+            intent.putExtra("pair_price", pn_next.getPair()+" "+pn_next.getPrice());
             sendBroadcast(intent);
             userTradesDao.deleteNotifiedPair(pn_next.getTimestamp());
 
@@ -192,9 +223,22 @@ public class YobitService extends Service {
         Log.d(TAG, "USERTRADES AFTER DELETE ALL PAIRS =  " + userTradesDao.getAll().toString());
         clearTradesTable();
 
-       // db.nickDao().getList();
+        // db.nickDao().getList();
     }
 
+    public class checkNickAsyncTask extends AsyncTask {
+
+        @Override
+        protected Object doInBackground(Object[] objects) {
+            checkNickPresent();
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Object o) {
+            super.onPostExecute(o);
+        }
+    }
 
     private String getPairs() {
         final UserTradesDao userTradesDao = db.userTradesDao();
@@ -202,9 +246,6 @@ public class YobitService extends Service {
         Log.d(TAG, "arrPairs  : " + pairs);
         return pairs;
     }
-
-
-
 
 
 }

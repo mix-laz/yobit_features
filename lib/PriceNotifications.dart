@@ -59,10 +59,9 @@ class _PriceNotificationsState extends State<PriceNotifications> {
   }
 
   void stopServiceInPlatform() async {
-    if (Platform.isAndroid) {
       var methodChannel = MethodChannel("com.yobit_features.messages");
       await methodChannel.invokeMethod('stopService');
-    }
+
   }
 
   void _changeIcon() {
@@ -92,7 +91,16 @@ class _PriceNotificationsState extends State<PriceNotifications> {
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: <Widget>[
                             Expanded(
-                              child: Center(child: Text(_list.elementAt(index).split(',')[0])),
+                              child: GestureDetector(
+                                  child: Center(                         // pair
+                                      child: Text(_list.elementAt(index).split(',')[0])),
+                              onTap: ()=>{
+                                    pairController.text=_list.elementAt(index).split(',')[0],
+                                    priceController.text=_list.elementAt(index).split(',')[2],
+
+
+                              },
+                              ),
                             ),
                             Expanded(
                               child: Image.asset(
@@ -107,7 +115,7 @@ class _PriceNotificationsState extends State<PriceNotifications> {
                               ),
                             ),
                             Expanded(
-                                child:
+                                child:                                         // price
                                     Center(child: Text(_list.elementAt(index).split(',')[2]))),
                             Expanded(
                                 child: GestureDetector(

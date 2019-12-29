@@ -16,8 +16,8 @@ class _ChatNotificationsState extends State<ChatNotifications> {
   @override
   void initState() {
     super.initState();
-    pairController.text = "mikro_btc";
-    priceController.text = "0.000179";
+    nickController.text = "";
+    inicializeListView();
   }
 
 
@@ -41,6 +41,8 @@ class _ChatNotificationsState extends State<ChatNotifications> {
   }
 
   void removeNickInPlatform(String name) async {
+    debugPrint("nick to remove: "+name);
+
     var methodChannel = MethodChannel("com.yobit_features.messages");
     List<dynamic> dynam = await methodChannel.invokeMethod(
         "removeNick", {"name":name});
@@ -124,8 +126,7 @@ class _ChatNotificationsState extends State<ChatNotifications> {
                         color: Colors.blue,
                         textColor: Colors.white,
                         onPressed: () {
-                          trackingNickInPlatform(      nickController.text);
-
+                          trackingNickInPlatform(nickController.text);
                         },
                         child: Text("+", style: TextStyle(fontSize: 35.0))))
               ])

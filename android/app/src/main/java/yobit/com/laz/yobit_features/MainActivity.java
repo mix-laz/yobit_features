@@ -1,9 +1,12 @@
 package yobit.com.laz.yobit_features;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 
@@ -48,7 +51,9 @@ public class MainActivity extends FlutterActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         GeneratedPluginRegistrant.registerWith(this);
+        createNotificationChannel();
         forYobitService = new Intent(MainActivity.this, YobitService.class);
+
 
 //        intFiltPP = new IntentFilter(PAIRS_PRICE_BROADCAST_ACTION);
 //        intFiltStopService = new IntentFilter(STOP_SERVICE_BROADCAST_ACTION);
@@ -70,7 +75,10 @@ public class MainActivity extends FlutterActivity {
                             Integer.parseInt(methodCall.argument(ARGUMENTS_COMPARE)),
                             TimeUnit.MILLISECONDS.toSeconds(Long.parseLong(methodCall.argument(ARGUMENTS_TIMESTAMP)))
                     );
-                    startService(forYobitService);
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        startForegroundService(forYobitService);
+                    }else  startService(forYobitService);
+
 
                     List<String> allAsString = db.userTradesDao().getAllAsString();
                     result.success(allAsString);
@@ -92,10 +100,15 @@ public class MainActivity extends FlutterActivity {
                 }else if (methodCall.method.equals("trackingNick")) {
                     Nick nick =new Nick(methodCall.argument("nick"));
                     db.nickDao().insert(nick);
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        startForegroundService(forYobitService);
+                    }else  startService(forYobitService);
                     List<String> list = db.nickDao().getList();
                     result.success(list);
                 }else if (methodCall.method.equals("removeNick")) {
-
+                    db.nickDao().deleteNick(methodCall.argument("name"));
+                    List<String> list = db.nickDao().getList();
+                    result.success(list);
                 }
 
             }
@@ -120,9 +133,6 @@ public class MainActivity extends FlutterActivity {
         usertradesDao.insert(usertrades);
 
         Log.d(TAG, "UserTrades: " + usertrades.toString());
-
-
-
     }
 
     private String objTojson(String pair, String price, boolean compare, long timestamp) {
@@ -137,13 +147,24 @@ public class MainActivity extends FlutterActivity {
         return jsonStr;
     }
 
+    private void createNotificationChannel() {
+        // Create the NotificationChannel, but only on API 26+ because
+        // the NotificationChannel class is new and not in the support library
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = getString(R.string.price_channel);
+            int importance = NotificationManager.IMPORTANCE_MAX;
+            NotificationChannel channel = new NotificationChannel("price_channel_id", name, importance);
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
+    }
+
     public void startService(String pair,String price,boolean compare,Intent intent) {
     /*if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
       startForegroundService(forYobitService);
     } else {
       startService(forYobitService);
     }*/
-
         Bundle b = new Bundle();
         b.putString(ARGUMENTS_PAIR, pair);
         b.putString(ARGUMENTS_PRICE, price);
