@@ -5,6 +5,7 @@ import 'package:date_format/date_format.dart';
 import 'PriceNotifications.dart';
 import 'package:flutter/cupertino.dart';
 import 'ChatNotifications.dart';
+import 'BestPrice.dart';
 
 class NavDrawerInTabbar extends StatelessWidget {
   void _openScreen(BuildContext context, DrawerMenu dm) {
@@ -22,15 +23,20 @@ class NavDrawerInTabbar extends StatelessWidget {
   Widget build(BuildContext context) {
     List<DrawerMenu> _listViewData = <DrawerMenu>[
       DrawerMenu(
-          title: "Google News", iconData: CupertinoIcons.info, widget: null),
+          title: "Новости Google ", iconData: CupertinoIcons.info, widget: null),
       DrawerMenu(
-          title: "Price Notifications",
+          title: "Уведомления цены",
           iconData: CupertinoIcons.mail,
           widget: new PriceNotifications()),
       DrawerMenu(
-          title: "Chat Notifications",
+          title: "Уведомления чата",
           iconData: CupertinoIcons.group,
-          widget: new ChatNotifications())
+          widget: new ChatNotifications()),
+      DrawerMenu(
+          title: "Выгодная продажа",
+          iconData: CupertinoIcons.shopping_cart,
+          widget: new BestPrice())
+
     ];
     return DefaultTabController(
       length: 3,
@@ -68,13 +74,13 @@ class NavDrawerInTabbar extends StatelessWidget {
           bottom: TabBar(
             tabs: <Widget>[
               Tab(
-                text: "General",
+                text: "Общие",
               ),
               Tab(
-                text: "Bitcoin",
+                text: "Биткоин",
               ),
               Tab(
-                text: "Cannabis",
+                text: "Каннабис",
               )
             ],
           ),

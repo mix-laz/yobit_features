@@ -1,10 +1,14 @@
 package yobit.com.laz.yobit_features;
 
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
 
@@ -21,6 +25,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import androidx.annotation.NonNull;
+import androidx.core.app.NotificationCompat;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -36,10 +41,13 @@ import yobit.com.laz.yobit_features.db.TradesDao;
 import yobit.com.laz.yobit_features.db.UserTradesDao;
 
 
-public class YobitService extends Service {
-    private static final String TAG = "YobitService";
+public class YobitForegroundService extends Service {
+    private static final String TAG = "YobitForegroundService";
     private static Timer timer;
     private static TimerTask timerTask;
+    public static final String NOTIFICATION_PRICE_PAIR_CHANNEL_ID = "notif_price_pair";
+    public static final String FOREGROUND_CHANNEL_ID = "ForegroundServiceChannel";
+
     AppDatabase db;
 
     @Override
@@ -62,6 +70,14 @@ public class YobitService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         super.onStartCommand(intent, flags, startId);
         startTimer(startId);
+        createNotificationChannel();
+        Notification notification = new NotificationCompat.Builder(this, FOREGROUND_CHANNEL_ID)
+                .setContentTitle("Yobit features")
+                .setContentText("")
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .build();
+        startForeground(1, notification);
+
         return START_REDELIVER_INTENT;
     }
 
@@ -172,7 +188,7 @@ public class YobitService extends Service {
         initializeTimerTask(startId);
 
         //schedule the timer, to wake up every 5 second
-        timer.schedule(timerTask, 1000, 5000); //
+        timer.schedule(timerTask, 1000, 3000); //
     }
 
     public void stoptimertask() {
@@ -237,6 +253,17 @@ public class YobitService extends Service {
         @Override
         protected void onPostExecute(Object o) {
             super.onPostExecute(o);
+        }
+    }
+    private void createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel serviceChannel = new NotificationChannel(
+                    FOREGROUND_CHANNEL_ID,
+                    "Foreground Service Channel",
+                    NotificationManager.IMPORTANCE_DEFAULT
+            );
+            NotificationManager manager = getSystemService(NotificationManager.class);
+            manager.createNotificationChannel(serviceChannel);
         }
     }
 

@@ -29,12 +29,12 @@ public class YobitReceiver extends BroadcastReceiver {
             );
         if(intent.getAction().equals(MainActivity.PAIRS_PRICE_BROADCAST_ACTION))
             sendNotification(context,new Intent()
-                    .putExtra("title","Price riched")
+                    .putExtra("title","Стоимость достигнута")
                     .putExtra("text",intent.getStringExtra("pair_price"))
             );
         if(intent.getAction().equals(MainActivity.NICK_PRESENT_BROADCAST_ACTION))
             sendNotification(context,new Intent()
-                    .putExtra("title","Nick present")
+                    .putExtra("title","Ник в чате")
                     .putExtra("text",intent.getStringExtra("nick"))
             );
 
@@ -53,10 +53,10 @@ public class YobitReceiver extends BroadcastReceiver {
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
             NotificationChannel channel = new NotificationChannel(
-                    MainActivity.NOTIFICATION_PRICE_PAIR_CHANNEL_ID, "price_channel", NotificationManagerCompat.IMPORTANCE_MAX);
+                    YobitForegroundService.NOTIFICATION_PRICE_PAIR_CHANNEL_ID, "price_channel", NotificationManagerCompat.IMPORTANCE_MAX);
             notificationManager.createNotificationChannel(channel);
         }
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, MainActivity.NOTIFICATION_PRICE_PAIR_CHANNEL_ID)
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, YobitForegroundService.NOTIFICATION_PRICE_PAIR_CHANNEL_ID)
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setContentTitle(intent.getStringExtra("title"))
                 .setContentText(new StringBuilder()

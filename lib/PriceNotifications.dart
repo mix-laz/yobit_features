@@ -19,7 +19,7 @@ class _PriceNotificationsState extends State<PriceNotifications> {
   void initState() {
     super.initState();
     pairController.text = "sex_btc";
-    priceController.text = "0.00025";
+    priceController.text = "0.000095";
     inicializeListView();
   }
 
@@ -74,7 +74,7 @@ class _PriceNotificationsState extends State<PriceNotifications> {
   Widget build(BuildContext context) {
     return new Scaffold(
         appBar: AppBar(
-          title: Text('Notifications'),
+          title: Text('Уведомления'),
         ),
         body: Container(
             padding: EdgeInsets.all(16.0),
@@ -138,7 +138,7 @@ class _PriceNotificationsState extends State<PriceNotifications> {
                         controller: pairController,
                         decoration: InputDecoration(
                             border: OutlineInputBorder(),
-                            hintText: 'pair...x_y'),
+                            hintText: 'пара...trx_btc'),
                       ),
                     ),
                     Expanded(
@@ -154,7 +154,7 @@ class _PriceNotificationsState extends State<PriceNotifications> {
                       child: TextField(
                         controller: priceController,
                         decoration: InputDecoration(
-                            border: OutlineInputBorder(), hintText: 'price...'),
+                            border: OutlineInputBorder(), hintText: 'цена...'),
                       ),
                     ),
                   ]),
@@ -166,8 +166,8 @@ class _PriceNotificationsState extends State<PriceNotifications> {
                         onPressed: () {
                           stopServiceInPlatform();
                         },
-                        child: Text("Stop Notifications",
-                            style: TextStyle(fontSize: 25.0))))
+                        child: Text("Остановить уведомления",
+                            style: TextStyle(fontSize: 20.0))))
               ]),
               Row(children: <Widget>[
                 Expanded(

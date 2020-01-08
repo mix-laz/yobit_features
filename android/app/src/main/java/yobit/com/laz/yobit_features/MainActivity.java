@@ -2,10 +2,8 @@ package yobit.com.laz.yobit_features;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
-import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -21,7 +19,6 @@ import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugins.GeneratedPluginRegistrant;
 import yobit.com.laz.yobit_features.db.AppDatabase;
 import yobit.com.laz.yobit_features.db.Nick;
-import yobit.com.laz.yobit_features.db.Trades;
 import yobit.com.laz.yobit_features.db.UserTrades;
 import yobit.com.laz.yobit_features.db.UserTradesDao;
 
@@ -38,7 +35,6 @@ public class MainActivity extends FlutterActivity {
     public static final String ARGUMENTS_PRICE = "price";
     public static final String ARGUMENTS_COMPARE = "compare";
     public static final String ARGUMENTS_TIMESTAMP = "timestamp";
-    public static final String NOTIFICATION_PRICE_PAIR_CHANNEL_ID = "notif_price_pair";
     public static final String PAIRS_PRICE__PREFERENCE = "pp_preference";
     private IntentFilter intFiltPP;
     private IntentFilter intFiltStartService;
@@ -52,7 +48,7 @@ public class MainActivity extends FlutterActivity {
         super.onCreate(savedInstanceState);
         GeneratedPluginRegistrant.registerWith(this);
         createNotificationChannel();
-        forYobitService = new Intent(MainActivity.this, YobitService.class);
+        forYobitService = new Intent(MainActivity.this, YobitForegroundService.class);
 
 
 //        intFiltPP = new IntentFilter(PAIRS_PRICE_BROADCAST_ACTION);
