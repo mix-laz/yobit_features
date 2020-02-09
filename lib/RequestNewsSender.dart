@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:yobit_features/GeneralNews.dart';
-import 'package:flutter_webview_plugin/flutter_webview_plugin.dart';
 import 'package:yobit_features/WebViewWebPage.dart';
 import 'configs.dart';
 
