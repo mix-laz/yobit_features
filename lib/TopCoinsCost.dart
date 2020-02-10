@@ -6,7 +6,7 @@ class TopCoinsCost {
     listPairs = jsonToObj(json);
   }
 
-  List jsonToObj(Map<String, dynamic> json) {
+  List<Pair> jsonToObj(Map<String, dynamic> json) {
     json.keys.forEach((key) => {_listPNames.add(key)});
     print(_listPNames);
 
@@ -15,8 +15,8 @@ class TopCoinsCost {
     for (int i = 0; i < _listPNames.length; i++) {
       final Pair pair = new Pair(
         pair: _listPNames[i],
-        asks: json[_listPNames[i]]['asks'],
-        bids: json[_listPNames[i]]['bids'],
+        asks: json[_listPNames[i]]['asks']  ,
+        bids: json[_listPNames[i]]['bids']  ,
       );
       print('next Pair:' + pair.toString());
 
@@ -29,8 +29,8 @@ class TopCoinsCost {
 
 class Pair {
   String pair;
-  List asks = <Ask>[];
-  List bids = <Bid>[];
+  var asks = [];
+  var bids = [];
 
   Pair({this.pair, this.bids, this.asks});
 

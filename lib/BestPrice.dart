@@ -215,28 +215,44 @@ class _BestPriceState extends State<BestPrice> {
     for (int i = 0; i < list.length; i++) {
       print('quoted_balancies $i: $quoted_balancies');
 
-      Pair next_pair = list.elementAt(i);
-      List<Bid> bids = next_pair.bids.cast<Bid>();
-      //List<Bid> cast = bids.cast<Bid>();
-      double quoted_balance;
-      print('quoted_balancies: $quoted_balancies');
-      print('bids: ');
+      Pair next_pair = list[i];
+
+
+     // print('type of next_pair.bids =  List<dynamic>:'+ (next_pair.bids is List<dynamic>).toString());
+
+      List<dynamic> bids = next_pair.bids;
+     // print('type of bids =  List<dynamic>:'+ (result is List<dynamic>).toString());
+     // List<dynamic> bids = result.cast<Bid>();
+      print('result =  '+bids.toString() );
+
+
+      double quoted_balance=0.0;
+
 
       for (int j = 0; j < bids.length; j++) {
-        var next_order = bids.elementAt(j);
+
+        var next_bid = bids[j];
+        var next_order = bids[j][0] ;
+        var next_amount = bids[j][1] ;
         print('next_order: $next_order');
-        if (base_balance > next_order.amount) {
+        print('next_bid: $next_bid');
+        //print('next_bid: $next_bid');
+
+
+        if (base_balance > next_order) {
           quoted_balance =
-              quoted_balance + next_order.amount * next_order.price;
+              quoted_balance + next_order * next_amount;
         } else {
-          quoted_balance = quoted_balance + base_balance * next_order.price;
+          quoted_balance = quoted_balance + base_balance * next_order;
           quoted_balancies.add(quoted_balance);
           break;
         }
-        base_balance = base_balance - next_order.amount;
+        base_balance = base_balance - next_amount;
         print('base_balance: $base_balance');
       }
     }
+    print('quoted_balancies: $quoted_balancies');
+
     return quoted_balancies;
   }
 }
