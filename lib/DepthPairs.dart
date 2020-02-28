@@ -1,5 +1,9 @@
+
+import 'Pair.dart';
+
 class DepthPairs {
   List<Pair> listPairs;
+
   List _listPNames = [];
 
   DepthPairs(Map<String, dynamic> json) {
@@ -30,16 +34,4 @@ class DepthPairs {
   }
 }
 
-class Pair {
-  String name;
-  var asks = [];
-  var bids = [];
-
-  Pair({this.name, this.bids, this.asks});
-
-  @override
-  String toString() {
-    return 'Pair{pair: $name, asks: $asks, bids: $bids}';
-  }
-}
 
