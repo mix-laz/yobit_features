@@ -18,7 +18,7 @@ class _PriceNotificationsState extends State<PriceNotifications> {
   @override
   void initState() {
     super.initState();
-    pairController.text = "sex_btc";
+    pairController.text = "yoda_btc";
     priceController.text = "0.000095";
     inicializeListView();
   }
