@@ -26,8 +26,8 @@ class _BestPriceState extends State<BestPrice> {
   @override
   void initState() {
     users = User.getUsers();
-    currencyController.text = 'alisa';
-    amountController.text = '4500';
+    currencyController.text = 'yoda';
+    amountController.text = '1000';
     super.initState();
   }
 
@@ -35,7 +35,7 @@ class _BestPriceState extends State<BestPrice> {
   Widget build(BuildContext context) {
     return new Scaffold(
       appBar: AppBar(
-        title: Text('Продажа'),
+        title: Text('Выбор валютной пары'),
       ),
       body: Container(
         decoration: new BoxDecoration(color: Colors.white),

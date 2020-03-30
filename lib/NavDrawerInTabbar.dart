@@ -33,7 +33,7 @@ class NavDrawerInTabbar extends StatelessWidget {
           iconData: CupertinoIcons.group,
           widget: new ChatNotifications()),
       DrawerMenu(
-          title: "Выгодная продажа",
+          title: "Продажа по парах",
           iconData: CupertinoIcons.shopping_cart,
           widget: new BestPrice())
 
