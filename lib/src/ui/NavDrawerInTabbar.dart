@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:yobit_features/src/models/news_model.dart';
-import '../../RequestNewsSender.dart';
 import '../resources/configs.dart';
 import 'package:date_format/date_format.dart';
 import '../../PriceNotifications.dart';
