@@ -1,10 +1,10 @@
-class GeneralNews {
+class NewsModel {
   List<Article> listArticles;
 
-  GeneralNews({this.listArticles});
+  NewsModel({this.listArticles});
 
-  factory GeneralNews.fromJson(Map<String, dynamic> json) {
-    return new GeneralNews(
+  factory NewsModel.fromJson(Map<String, dynamic> json) {
+    return new NewsModel(
         listArticles: json['articles'] != null
             ? json['articles']
                 .map((value) => new Article.fromJson(value))

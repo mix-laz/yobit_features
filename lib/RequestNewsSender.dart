@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:yobit_features/GeneralNews.dart';
+import 'package:yobit_features/src/models/news_model.dart';
 import 'package:yobit_features/WebViewWebPage.dart';
-import 'configs.dart';
+import 'src/resources/configs.dart';
 
 class RequestNewsSender extends StatelessWidget {
   RequestNewsSender(this._currentDate, this._q, {Key key}) : super(key: key);
 
-  final _currentDate;
   final _q;
   String _url;
+  String _currentDate;
 
   @override
   Widget build(BuildContext context) {
@@ -36,8 +36,8 @@ class RequestNewsSender extends StatelessWidget {
                       style: TextStyle(color: Colors.red),
                     );
                   } else if (snapshot.hasData) {
-                    GeneralNews generalNews =
-                        GeneralNews.fromJson(json.decode(snapshot.data));
+                    NewsModel generalNews =
+                        NewsModel.fromJson(json.decode(snapshot.data));
                     ListView tempList = ListView.builder(
                         itemCount: generalNews.listArticles == null
                             ? 0
