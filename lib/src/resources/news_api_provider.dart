@@ -24,4 +24,6 @@ class NewsApiProvider {
       throw Exception('Failed to load news');
     }
   }
+
 }
+
